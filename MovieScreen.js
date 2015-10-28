@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * create the movie detail view
+ */
 var React = require('react-native');
 var {
   Image,

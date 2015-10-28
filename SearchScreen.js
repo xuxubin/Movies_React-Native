@@ -26,8 +26,9 @@ var {
   TextInput,
   View,
 } = React;
-var TimerMixin = require('react-timer-mixin');
 
+//如果不放在同级的node_modules下，会报错
+var TimerMixin = require('react-timer-mixin');
 var invariant = require('invariant');
 //var dismissKeyboard = require('dismissKeyboard');
 

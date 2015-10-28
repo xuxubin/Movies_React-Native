@@ -1,5 +1,6 @@
 'use strict';
 
+// define the cell of listview
 var React = require('react-native');
 
 var {
