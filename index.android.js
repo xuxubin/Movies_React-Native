@@ -1,114 +1,92 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * The examples provided by Facebook are for non-commercial testing and
+ * evaluation purposes only.
+ *
+ * Facebook reserves all rights not expressly granted.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON INFRINGEMENT. IN NO EVENT SHALL
+ * FACEBOOK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * @providesModule MoviesApp
+ * @flow
  */
 'use strict';
 
 var React = require('react-native');
-
-var MOCKED_MOVIES_DATA = [
-  {title: 'Title', year: '2016', posters: {thumbnail: 'http://i.imgur.com/UePbdph.jpg'}},
-];
-
-var REQUEST_URL = 'https://raw.githubusercontent.com/facebook/react-native/master/docs/MoviesExample.json';
-
-//在这里包含需要用到的组件
 var {
   AppRegistry,
+  BackAndroid,
+  Navigator,
   StyleSheet,
-  Text,
+  ToolbarAndroid,
   View,
-  Image,
-  ListView,
 } = React;
+
+var MovieScreen = require('./MovieScreen');
+var SearchScreen = require('./SearchScreen');
+
+var _navigator;
+BackAndroid.addEventListener('hardwareBackPress', () => {
+  if (_navigator && _navigator.getCurrentRoutes().length > 1) {
+    _navigator.pop();
+    return true;
+  }
+  return false;
+});
+
+var RouteMapper = function(route, navigationOperations, onComponentRef) {
+  _navigator = navigationOperations;
+  if (route.name === 'search') {
+    return (
+      <SearchScreen navigator={navigationOperations} />
+    );
+  } else if (route.name === 'movie') {
+    return (
+      <View style={{flex: 1}}>
+        <ToolbarAndroid
+          actions={[]}
+          navIcon={require('image!android_back_white')}
+          onIconClicked={navigationOperations.pop}
+          style={styles.toolbar}
+          titleColor="white"
+          title={route.movie.title} />
+        <MovieScreen
+          style={{flex: 1}}
+          navigator={navigationOperations}
+          movie={route.movie}
+        />
+      </View>
+    );
+  }
+};
+
+var MoviesApp = React.createClass({
+  render: function() {
+    var initialRoute = {name: 'search'};
+    return (
+      <Navigator
+        style={styles.container}
+        initialRoute={initialRoute}
+        configureScene={() => Navigator.SceneConfigs.FadeAndroid}
+        renderScene={RouteMapper}
+      />
+    );
+  }
+});
 
 var styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: 'white',
   },
-  thumbnail: {
-    width: 53,
-    height: 81,
+  toolbar: {
+    backgroundColor: '#a9a9a9',
+    height: 56,
   },
-  rightContainer: {
-    flex:1
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 8,
-    textAlign: 'center'
-  },
-  year: {
-    textAlign: 'center'
-  },
-  listView: {
-    paddingTop: 20,
-    backgroundColor: '#F5FCFF',
-  }
 });
 
-var Movies = React.createClass({
-  getInitialState: function() {
-    return {
-      dataSource: new ListView.DataSource({
-        rowHasChanged: (row1, row2) => row1 !== row2,
-      }),
-      loaded: false,
-    };
-  },
-  componentDidMount: function() {
-    this.fetchData();
-  },
-  // 请求数据
-  fetchData: function() {
-    fetch(REQUEST_URL)
-      .then((response) => response.json())
-      .then((responseData) => {
-        this.setState({
-          dataSource:this.state.dataSource.cloneWithRows(responseData.movies),
-          loaded: true,
-        });
-      })
-      .done();
-  },
-  render: function() {
-    if(!this.state.loaded) {
-      return this.renderLoadingView();
-    }
-    return (
-      <ListView
-        style={styles.listView}
-        dataSource={this.state.dataSource}
-        renderRow={this.renderMovie} />
-    );
-  },
-  renderMovie: function(movie) {
-    return (
-      <View style={styles.container}>
-        <Image 
-          source={{uri:movie.posters.thumbnail}}
-          style={styles.thumbnail} 
-        />
-        <View style={styles.rightContainer}>
-          <Text style={styles.title}>{movie.title}</Text>
-          <Text style={styles.year}>{movie.year}</Text>
-        </View>
-      </View>
-    );
-  },
-  renderLoadingView: function() {
-    return (
-      <View style={styles.container}>
-        <Text>
-          Loading movies...
-        </Text>
-      </View>
-    );
-  }
-});
-
-AppRegistry.registerComponent('Movies', () => Movies);
+AppRegistry.registerComponent('Movies', () => MoviesApp);
